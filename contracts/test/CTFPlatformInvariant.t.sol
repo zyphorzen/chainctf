@@ -78,7 +78,6 @@ contract CTFHandler is Test {
         }
 
         vm.prank(player);
-
         platform.solveChallenge(challengeId, challengeHash);
 
         successfulSolves++;
