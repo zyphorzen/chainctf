@@ -83,20 +83,12 @@ contract CTFPlatformSecurityTest is Test {
         assertFalse(platform.solved(player, 1));
     }
 
-    function testFuzzCreateChallenge(
-        bytes32 challengeHash,
-        uint256 reward
-    ) public {
+    function testFuzzCreateChallenge(bytes32 challengeHash, uint256 reward) public {
         platform.createChallenge(challengeHash, reward);
 
         assertEq(platform.challengeCount(), 1);
 
-        (
-            uint256 id,
-            bytes32 storedHash,
-            uint256 storedReward,
-            bool active
-        ) = platform.challenges(1);
+        (uint256 id, bytes32 storedHash, uint256 storedReward, bool active) = platform.challenges(1);
 
         assertEq(id, 1);
         assertEq(storedHash, challengeHash);
@@ -120,7 +112,7 @@ contract CTFPlatformSecurityTest is Test {
         platform.createChallenge(keccak256("secret"), 100);
         platform.setChallengeStatus(1, active);
 
-        (, , , bool storedActive) = platform.challenges(1);
+        (,,, bool storedActive) = platform.challenges(1);
         assertEq(storedActive, active);
     }
 }

@@ -8,6 +8,7 @@ contract CTFPlatformTest is Test {
     CTFPlatform public platform;
 
     address player = address(1);
+
     function setUp() public {
         platform = new CTFPlatform(address(this));
     }
@@ -18,12 +19,7 @@ contract CTFPlatformTest is Test {
         platform.createChallenge(hash, 100);
         assertEq(platform.challengeCount(), 1);
 
-        (
-            uint256 id,
-            bytes32 challengeHash,
-            uint256 reward,
-            bool active
-        ) = platform.challenges(1);
+        (uint256 id, bytes32 challengeHash, uint256 reward, bool active) = platform.challenges(1);
 
         assertEq(id, 1);
         assertEq(challengeHash, hash);

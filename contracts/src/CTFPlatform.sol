@@ -23,42 +23,24 @@ contract CTFPlatform is Ownable {
     error InvalidProof();
     error InvalidChallenge();
 
-    event ChallengeCreated(
-        uint256 indexed challengeId,
-        bytes32 indexed challengeHash,
-        uint256 reward
-    );
+    event ChallengeCreated(uint256 indexed challengeId, bytes32 indexed challengeHash, uint256 reward);
 
     event ChallengeStatusChanged(uint256 indexed challengeId, bool active);
 
-    event ChallengeSolved(
-        address indexed player,
-        uint256 indexed challengeId,
-        uint256 reward
-    );
+    event ChallengeSolved(address indexed player, uint256 indexed challengeId, uint256 reward);
 
     constructor(address initialOwner) Ownable(initialOwner) {}
 
-    function createChallenge(
-        bytes32 challengeHash,
-        uint256 reward
-    ) external onlyOwner {
+    function createChallenge(bytes32 challengeHash, uint256 reward) external onlyOwner {
         challengeCount++;
 
-        challenges[challengeCount] = Challenge({
-            id: challengeCount,
-            challengeHash: challengeHash,
-            reward: reward,
-            active: true
-        });
+        challenges[challengeCount] =
+            Challenge({id: challengeCount, challengeHash: challengeHash, reward: reward, active: true});
 
         emit ChallengeCreated(challengeCount, challengeHash, reward);
     }
 
-    function setChallengeStatus(
-        uint256 challengeId,
-        bool active
-    ) external onlyOwner {
+    function setChallengeStatus(uint256 challengeId, bool active) external onlyOwner {
         if (challengeId == 0 || challengeId > challengeCount) {
             revert ChallengeNotFound();
         }
@@ -93,10 +75,7 @@ contract CTFPlatform is Ownable {
         emit ChallengeSolved(msg.sender, challengeId, challenge.reward);
     }
 
-    function getChallengeHash(
-        uint256 challengeId,
-        bytes32 solutionHash
-    ) public pure returns (bytes32) {
+    function getChallengeHash(uint256 challengeId, bytes32 solutionHash) public pure returns (bytes32) {
         return keccak256(abi.encode(challengeId, solutionHash));
     }
 }
