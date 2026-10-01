@@ -9,13 +9,11 @@ contract CTFPlatformTest is Test {
 
     address player = address(1);
     function setUp() public {
-        platform = new CTFPlatform();
+        platform = new CTFPlatform(address(this));
     }
 
     function testCreateChallenge() public {
-        bytes32 hash = keccak256(
-            abi.encodePacked("challenge-1")
-        );
+        bytes32 hash = keccak256(abi.encodePacked("challenge-1"));
 
         platform.createChallenge(hash, 100);
         assertEq(platform.challengeCount(), 1);
@@ -34,59 +32,39 @@ contract CTFPlatformTest is Test {
     }
 
     function testSolveChallenge() public {
-        bytes32 hash = keccak256(
-            abi.encodePacked("challenge-1")
-        );
+        bytes32 hash = keccak256(abi.encodePacked("challenge-1"));
 
         platform.createChallenge(hash, 100);
         vm.prank(player);
         platform.solveChallenge(1, hash);
 
-        assertTrue(
-            platform.solved(player, 1)
-        );
+        assertTrue(platform.solved(player, 1));
 
-        assertEq(
-            platform.scores(player),
-            100
-        );
+        assertEq(platform.scores(player), 100);
     }
 
     function testCannotSolveTwice() public {
-        bytes32 hash = keccak256(
-            abi.encodePacked("challenge-1")
-        );
+        bytes32 hash = keccak256(abi.encodePacked("challenge-1"));
 
         platform.createChallenge(hash, 100);
         vm.startPrank(player);
         platform.solveChallenge(1, hash);
 
-        vm.expectRevert(
-            "Already solved"
-        );
+        vm.expectRevert(CTFPlatform.ChallengeAlreadySolved.selector);
 
         platform.solveChallenge(1, hash);
         vm.stopPrank();
     }
 
     function testInvalidProof() public {
-        bytes32 hash = keccak256(
-            abi.encodePacked("challenge-1")
-        );
+        bytes32 hash = keccak256(abi.encodePacked("challenge-1"));
 
-        bytes32 wrongProof = keccak256(
-            abi.encodePacked("wrong")
-        );
+        bytes32 wrongProof = keccak256(abi.encodePacked("wrong"));
 
         platform.createChallenge(hash, 100);
         vm.prank(player);
-        vm.expectRevert(
-            "Invalid proof"
-        );
+        vm.expectRevert(CTFPlatform.InvalidProof.selector);
 
-        platform.solveChallenge(
-            1,
-            wrongProof
-        );
+        platform.solveChallenge(1, wrongProof);
     }
 }
