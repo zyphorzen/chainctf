@@ -29,7 +29,7 @@ contract CTFPlatform is Ownable, EIP712 {
     uint256 public challengeCount;
     address public verifier;
 
-    bytes32 private constant ACHIEVEMENT_TYPEHASH =
+    bytes32 public constant ACHIEVEMENT_TYPEHASH =
         keccak256(
             "Achievement(address player,uint256 challengeId,uint256 nonce,uint256 deadline)"
         );
@@ -41,6 +41,7 @@ contract CTFPlatform is Ownable, EIP712 {
     error NonceAlreadyUsed();
     error AuthorizationExpired();
     error InvalidSignature();
+    error InvalidPlayer();
 
     event ChallengeCreated(uint256 indexed challengeId, uint256 reward);
     event ChallengeStatusChanged(uint256 indexed challengeId, bool active);
@@ -65,6 +66,26 @@ contract CTFPlatform is Ownable, EIP712 {
         }
 
         verifier = initialVerifier;
+    }
+
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _domainSeparatorV4();
+    }
+
+    function getAchievementHash(
+        Achievement calldata achievement
+    ) public view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                ACHIEVEMENT_TYPEHASH,
+                achievement.player,
+                achievement.challengeId,
+                achievement.nonce,
+                achievement.deadline
+            )
+        );
+
+        return _hashTypedDataV4(structHash);
     }
 
     function setVerifier(address newVerifier) external onlyOwner {
@@ -108,7 +129,7 @@ contract CTFPlatform is Ownable, EIP712 {
         if (
             achievement.player == address(0) || achievement.player != msg.sender
         ) {
-            revert InvalidSignature();
+            revert InvalidPlayer();
         }
 
         if (
@@ -136,17 +157,7 @@ contract CTFPlatform is Ownable, EIP712 {
             revert AuthorizationExpired();
         }
 
-        bytes32 structHash = keccak256(
-            abi.encode(
-                ACHIEVEMENT_TYPEHASH,
-                achievement.player,
-                achievement.challengeId,
-                achievement.nonce,
-                achievement.deadline
-            )
-        );
-
-        bytes32 digest = _hashTypedDataV4(structHash);
+        bytes32 digest = getAchievementHash(achievement);
         address signer = digest.recover(signature);
 
         if (signer != verifier) {

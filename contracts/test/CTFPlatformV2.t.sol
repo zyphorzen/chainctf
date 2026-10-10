@@ -5,15 +5,6 @@ import {Test} from "forge-std/Test.sol";
 import {CTFPlatform} from "../src/CTFPlatform.sol";
 
 contract CTFPlatformV2Test is Test {
-    constructor(
-        address initialOwner,
-        address initialVerifier
-    ) CTFPlatform(initialOwner, initialVerifier) {}
-
-    function hashTypedData(bytes32 structHash) external view returns (bytes32) {
-        return _hashTypedDataV4(structHash);
-    }
-
     CTFPlatform public platform;
 
     uint256 verifierPrivateKey = 0xA11CE;
@@ -28,6 +19,7 @@ contract CTFPlatformV2Test is Test {
     function setUp() public {
         verifier = vm.addr(verifierPrivateKey);
         platform = new CTFPlatform(address(this), verifier);
+        platform.createChallenge(REWARD);
         platform.createChallenge(REWARD);
     }
 
@@ -50,30 +42,8 @@ contract CTFPlatformV2Test is Test {
         CTFPlatform.Achievement memory achievement,
         uint256 privateKey
     ) internal view returns (bytes memory signature) {
-        bytes32 typeHash = keccak256(
-            "Achievement(address player,uint256 challengeId,uint256 nonce,uint256 deadline)"
-        );
-
-        bytes32 structHash = keccak256(
-            abi.encode(
-                typeHash,
-                achievement.player,
-                achievement.challengeId,
-                achievement.nonce,
-                achievement.deadline
-            )
-        );
-
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                platform.DOMAIN_SEPARATOR(),
-                structHash
-            )
-        );
-
+        bytes32 digest = platform.getAchievementHash(achievement);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
-
         return abi.encodePacked(r, s, v);
     }
 
@@ -139,7 +109,7 @@ contract CTFPlatformV2Test is Test {
         );
 
         vm.prank(attacker);
-        vm.expectRevert(CTFPlatform.InvalidSignature.selector);
+        vm.expectRevert(CTFPlatform.InvalidPlayer.selector);
 
         platform.submitAchievement(achievement, signature);
     }
