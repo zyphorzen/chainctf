@@ -6,13 +6,11 @@ from app.models.authorization import Authorization
 def test_player_profile_and_leaderboard(client, auth_headers, test_player, db_session):
     player_addr = test_player["player"].wallet_address
 
-    # Initially score is 0
     res = client.get("/api/player/me", headers=auth_headers)
     assert res.status_code == 200
     assert res.json()["score"] == 0
     assert res.json()["solved_count"] == 0
 
-    # Add indexed on-chain events
     event1 = IndexedEvent(
         tx_hash="0x1111111111111111111111111111111111111111111111111111111111111111",
         block_number=100,
@@ -36,13 +34,11 @@ def test_player_profile_and_leaderboard(client, auth_headers, test_player, db_se
     db_session.add_all([event1, event2])
     db_session.commit()
 
-    # Profile now reflects 350 score and 2 solves
     res_updated = client.get("/api/player/me", headers=auth_headers)
     assert res_updated.status_code == 200
     assert res_updated.json()["score"] == 350
     assert res_updated.json()["solved_count"] == 2
 
-    # Leaderboard reflects player rank #1
     leaderboard_res = client.get("/api/leaderboard")
     assert leaderboard_res.status_code == 200
     leaders = leaderboard_res.json()

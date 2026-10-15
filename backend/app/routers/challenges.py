@@ -22,8 +22,12 @@ def list_challenges(
     db: Session = Depends(get_db),
     current_player: Optional[Player] = Depends(get_optional_current_player),
 ):
-    """Lists all active challenges. If the user is authenticated, flags which ones are already solved."""
-    challenges = db.query(Challenge).filter(Challenge.is_active == True).order_by(Challenge.id.asc()).all()
+    challenges = (
+        db.query(Challenge)
+        .filter(Challenge.is_active == True)
+        .order_by(Challenge.id.asc())
+        .all()
+    )
 
     solved_challenge_ids = set()
     if current_player:
@@ -57,8 +61,11 @@ def get_challenge(
     db: Session = Depends(get_db),
     current_player: Optional[Player] = Depends(get_optional_current_player),
 ):
-    """Retrieves a single challenge by ID."""
-    c = db.query(Challenge).filter(Challenge.id == challenge_id, Challenge.is_active == True).first()
+    c = (
+        db.query(Challenge)
+        .filter(Challenge.id == challenge_id, Challenge.is_active == True)
+        .first()
+    )
     if not c:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,24 +103,18 @@ def submit_flag(
     db: Session = Depends(get_db),
     current_player: Player = Depends(get_current_player),
 ):
-    """
-    Submits a flag for verification.
-    If correct, issues a signed EIP-712 authorization payload for submitAchievement() on-chain.
-    """
     if challenge_id != data.challenge_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Challenge ID in path and body do not match",
         )
 
-    # 1. Rate limiting check
     if not check_rate_limit(db, current_player.wallet_address):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many submission attempts. Please wait a moment before trying again.",
         )
 
-    # 2. Challenge exists and is active
     c = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not c or not c.is_active:
         raise HTTPException(
@@ -121,7 +122,6 @@ def submit_flag(
             detail="Challenge not found or inactive",
         )
 
-    # 3. Check if player has already solved this challenge on-chain
     already_solved = (
         db.query(IndexedEvent)
         .filter(
@@ -136,10 +136,8 @@ def submit_flag(
             detail="You have already completed this challenge on-chain!",
         )
 
-    # 4. Verify flag
     is_correct = verify_flag(data.flag, c.flag_hash)
 
-    # Record submission audit entry
     submission_record = Submission(
         player_address=current_player.wallet_address,
         challenge_id=challenge_id,
@@ -154,7 +152,6 @@ def submit_flag(
             detail="Incorrect flag. Keep trying!",
         )
 
-    # 5. Flag is correct: generate EIP-712 authorization
     auth_response = create_achievement_authorization(
         db=db,
         player_address=current_player.wallet_address,
@@ -168,9 +165,6 @@ def create_challenge(
     data: ChallengeCreate,
     db: Session = Depends(get_db),
 ):
-    """
-    Creates a new challenge and securely hashes its flag with bcrypt.
-    """
     existing = db.query(Challenge).filter(Challenge.id == data.id).first()
     if existing:
         raise HTTPException(

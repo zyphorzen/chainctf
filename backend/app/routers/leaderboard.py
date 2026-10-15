@@ -13,10 +13,6 @@ router = APIRouter(prefix="/leaderboard", tags=["Leaderboard"])
 
 @router.get("", response_model=List[LeaderboardEntry])
 def get_leaderboard(db: Session = Depends(get_db)):
-    """
-    Computes global leaderboard strictly based on on-chain verified ChallengeSolved events.
-    """
-    # Group by player_address, sum rewards, count solves
     scores_query = (
         db.query(
             IndexedEvent.player_address,
@@ -32,7 +28,6 @@ def get_leaderboard(db: Session = Depends(get_db)):
     if not scores_query:
         return []
 
-    # Map usernames
     addresses = [row.player_address for row in scores_query]
     players = db.query(Player).filter(Player.wallet_address.in_(addresses)).all()
     username_map = {p.wallet_address: p.username for p in players}

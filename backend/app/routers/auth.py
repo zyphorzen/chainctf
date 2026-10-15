@@ -5,7 +5,12 @@ from web3 import Web3
 
 from app.database import get_db
 from app.models.player import Player
-from app.schemas.auth import NonceRequest, NonceResponse, VerifySignatureRequest, TokenResponse
+from app.schemas.auth import (
+    NonceRequest,
+    NonceResponse,
+    VerifySignatureRequest,
+    TokenResponse,
+)
 from app.services.auth_service import (
     generate_login_message,
     verify_wallet_signature,
@@ -17,7 +22,6 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/nonce", response_model=NonceResponse)
 def request_nonce(data: NonceRequest, db: Session = Depends(get_db)):
-    """Generates an authentication nonce and structured message for wallet signing."""
     try:
         checksum_address = Web3.to_checksum_address(data.wallet_address)
     except ValueError:
@@ -47,7 +51,6 @@ def request_nonce(data: NonceRequest, db: Session = Depends(get_db)):
 
 @router.post("/verify", response_model=TokenResponse)
 def verify_signature(data: VerifySignatureRequest, db: Session = Depends(get_db)):
-    """Verifies the wallet signature against the stored nonce and issues a JWT token."""
     try:
         checksum_address = Web3.to_checksum_address(data.wallet_address)
     except ValueError:
@@ -64,7 +67,9 @@ def verify_signature(data: VerifySignatureRequest, db: Session = Depends(get_db)
         )
 
     expected_message = generate_login_message(player.auth_nonce)
-    is_valid = verify_wallet_signature(checksum_address, data.signature, expected_message)
+    is_valid = verify_wallet_signature(
+        checksum_address, data.signature, expected_message
+    )
 
     if not is_valid:
         raise HTTPException(
@@ -72,7 +77,6 @@ def verify_signature(data: VerifySignatureRequest, db: Session = Depends(get_db)
             detail="Invalid wallet signature",
         )
 
-    # Invalidate nonce to prevent replay
     player.auth_nonce = None
     db.commit()
 

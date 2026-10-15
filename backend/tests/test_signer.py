@@ -31,7 +31,6 @@ def test_eip712_signature_recovers_to_verifier(db_session, test_player):
         challenge=challenge,
     )
 
-    # Reconstruct EIP-712 message in the test to independently verify signature
     typed_data = {
         "types": {
             "EIP712Domain": [
@@ -68,13 +67,18 @@ def test_eip712_signature_recovers_to_verifier(db_session, test_player):
         signature=auth_response.signature,
     )
 
-    # Assert recovered signer strictly equals configured verifier address
-    assert Web3.to_checksum_address(recovered) == Web3.to_checksum_address(verifier_account.address)
+    assert Web3.to_checksum_address(recovered) == Web3.to_checksum_address(
+        verifier_account.address
+    )
 
 
 def test_signer_nonce_increments(db_session, test_player):
-    c1 = Challenge(id=31, title="C1", description="D1", reward=50, flag_hash="x", is_active=True)
-    c2 = Challenge(id=32, title="C2", description="D2", reward=50, flag_hash="y", is_active=True)
+    c1 = Challenge(
+        id=31, title="C1", description="D1", reward=50, flag_hash="x", is_active=True
+    )
+    c2 = Challenge(
+        id=32, title="C2", description="D2", reward=50, flag_hash="y", is_active=True
+    )
     db_session.add_all([c1, c2])
     db_session.commit()
 

@@ -29,7 +29,9 @@ def test_submit_wrong_flag(client, auth_headers, seeded_challenge):
     assert "Incorrect flag" in response.json()["detail"]
 
 
-def test_submit_correct_flag_returns_authorization(client, auth_headers, seeded_challenge, test_player):
+def test_submit_correct_flag_returns_authorization(
+    client, auth_headers, seeded_challenge, test_player
+):
     response = client.post(
         f"/api/challenges/{seeded_challenge.id}/submit",
         headers=auth_headers,
@@ -52,7 +54,6 @@ def test_submit_correct_flag_returns_authorization(client, auth_headers, seeded_
 
 
 def test_rate_limiting_triggered(client, auth_headers, seeded_challenge):
-    # Spam submissions to trigger rate limiter
     for _ in range(10):
         client.post(
             f"/api/challenges/{seeded_challenge.id}/submit",
@@ -60,7 +61,6 @@ def test_rate_limiting_triggered(client, auth_headers, seeded_challenge):
             json={"challenge_id": seeded_challenge.id, "flag": "FLAG{spam}"},
         )
 
-    # 11th attempt should trigger 429 Too Many Requests
     res = client.post(
         f"/api/challenges/{seeded_challenge.id}/submit",
         headers=auth_headers,

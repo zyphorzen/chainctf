@@ -16,7 +16,6 @@ from app.services.challenge_service import hash_flag
 
 
 def seed_initial_challenges():
-    """Seeds default CTF challenges matching on-chain challenge IDs if database is empty."""
     db = SessionLocal()
     try:
         count = db.query(Challenge).count()
@@ -47,7 +46,6 @@ def seed_initial_challenges():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB schema
     Base.metadata.create_all(bind=engine)
     seed_initial_challenges()
     yield
@@ -56,20 +54,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="ChainCTF Backend API — EIP-712 Signed Flag Verification & On-Chain Indexer",
+    description="ChainCTF Backend API",
     lifespan=lifespan,
 )
 
-# CORS configuration for Frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict to frontend origin in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount API routers
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
 app.include_router(challenges_router, prefix=settings.API_V1_PREFIX)
 app.include_router(player_router, prefix=settings.API_V1_PREFIX)

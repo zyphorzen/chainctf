@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, DateTime, BigInteger
 from app.database import Base
 
@@ -14,4 +14,8 @@ class IndexedEvent(Base):
     player_address = Column(String(42), nullable=False, index=True)
     challenge_id = Column(Integer, nullable=False, index=True)
     reward = Column(Integer, nullable=False)
-    processed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    processed_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+        nullable=False,
+    )

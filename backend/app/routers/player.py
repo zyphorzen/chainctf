@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 from web3 import Web3
 
@@ -21,7 +20,6 @@ def get_my_profile(
     db: Session = Depends(get_db),
     current_player: Player = Depends(get_current_player),
 ):
-    """Retrieves authenticated player profile with verified on-chain score."""
     events = (
         db.query(IndexedEvent)
         .filter(IndexedEvent.player_address == current_player.wallet_address)
@@ -43,7 +41,6 @@ def get_my_active_authorizations(
     db: Session = Depends(get_db),
     current_player: Player = Depends(get_current_player),
 ):
-    """Retrieves all active EIP-712 authorizations for the current player."""
     auths = (
         db.query(Authorization)
         .filter(
@@ -80,7 +77,6 @@ def get_public_profile(
     wallet_address: str,
     db: Session = Depends(get_db),
 ):
-    """Retrieves any player's public profile and verified score."""
     try:
         checksum_address = Web3.to_checksum_address(wallet_address)
     except ValueError:

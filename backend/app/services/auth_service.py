@@ -21,17 +21,25 @@ def generate_login_message(nonce: str) -> str:
     return f"ChainCTF Authentication\nPlease sign this message to verify your wallet ownership.\nNonce: {nonce}"
 
 
-def verify_wallet_signature(wallet_address: str, signature: str, expected_message: str) -> bool:
+def verify_wallet_signature(
+    wallet_address: str, signature: str, expected_message: str
+) -> bool:
     try:
         signable_message = encode_defunct(text=expected_message)
-        recovered_address = Account.recover_message(signable_message, signature=signature)
-        return Web3.to_checksum_address(recovered_address) == Web3.to_checksum_address(wallet_address)
+        recovered_address = Account.recover_message(
+            signable_message, signature=signature
+        )
+        return Web3.to_checksum_address(recovered_address) == Web3.to_checksum_address(
+            wallet_address
+        )
     except Exception:
         return False
 
 
 def create_access_token(wallet_address: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.JWT_EXPIRATION_MINUTES
+    )
     payload = {
         "sub": Web3.to_checksum_address(wallet_address),
         "exp": expire,

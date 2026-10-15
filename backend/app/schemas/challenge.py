@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class ChallengeRead(BaseModel):
@@ -17,9 +17,9 @@ class ChallengeRead(BaseModel):
 
 
 class ChallengeCreate(BaseModel):
-    id: int = Field(..., description="Corresponds to on-chain challenge ID")
+    id: int
     title: str
     description: str
     category: str = "Smart Contract"
-    reward: int = Field(gt=0, description="Reward points")
-    flag: str = Field(..., description="Plaintext flag to be securely hashed")
+    reward: int
+    flag: str

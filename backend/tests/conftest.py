@@ -6,9 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Ensure test settings
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-os.environ["VERIFIER_PRIVATE_KEY"] = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6"
+os.environ["VERIFIER_PRIVATE_KEY"] = (
+    "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6"
+)
 os.environ["CONTRACT_ADDRESS"] = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 os.environ["CHAIN_ID"] = "31337"
 
@@ -65,7 +66,6 @@ def client(db_session):
 
 @pytest.fixture
 def test_player(db_session):
-    # Standard player account for testing
     account = Account.create()
     player = Player(
         wallet_address=account.address,

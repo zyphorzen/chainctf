@@ -14,17 +14,14 @@ def test_request_nonce(client):
 
 def test_verify_signature_success(client):
     account = Account.create()
-    # 1. Request nonce
     nonce_res = client.post("/api/auth/nonce", json={"wallet_address": account.address})
     assert nonce_res.status_code == 200
     message = nonce_res.json()["message"]
 
-    # 2. Sign message using wallet private key
     signable = encode_defunct(text=message)
     signed = account.sign_message(signable)
     signature_hex = signed.signature.hex()
 
-    # 3. Verify signature
     verify_res = client.post(
         "/api/auth/verify",
         json={"wallet_address": account.address, "signature": signature_hex},
@@ -40,18 +37,18 @@ def test_verify_signature_invalid(client):
     account = Account.create()
     attacker = Account.create()
 
-    # 1. Request nonce for account
     nonce_res = client.post("/api/auth/nonce", json={"wallet_address": account.address})
     message = nonce_res.json()["message"]
 
-    # 2. Sign message with WRONG key (attacker)
     signable = encode_defunct(text=message)
     bad_signed = attacker.sign_message(signable)
 
-    # 3. Verify signature fails
     verify_res = client.post(
         "/api/auth/verify",
-        json={"wallet_address": account.address, "signature": bad_signed.signature.hex()},
+        json={
+            "wallet_address": account.address,
+            "signature": bad_signed.signature.hex(),
+        },
     )
     assert verify_res.status_code == 401
     assert "Invalid wallet signature" in verify_res.json()["detail"]
@@ -66,14 +63,12 @@ def test_nonce_single_use(client):
     signed = account.sign_message(signable)
     signature_hex = signed.signature.hex()
 
-    # First verify succeeds
     res1 = client.post(
         "/api/auth/verify",
         json={"wallet_address": account.address, "signature": signature_hex},
     )
     assert res1.status_code == 200
 
-    # Replay attempt fails because nonce was cleared
     res2 = client.post(
         "/api/auth/verify",
         json={"wallet_address": account.address, "signature": signature_hex},

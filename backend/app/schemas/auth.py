@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class NonceRequest(BaseModel):
-    wallet_address: str = Field(..., description="EVM wallet address (hex)")
+    wallet_address: str
 
 
 class NonceResponse(BaseModel):
@@ -12,8 +12,8 @@ class NonceResponse(BaseModel):
 
 
 class VerifySignatureRequest(BaseModel):
-    wallet_address: str = Field(..., description="EVM wallet address (hex)")
-    signature: str = Field(..., description="Hex-encoded signature from personal_sign")
+    wallet_address: str
+    signature: str
 
 
 class TokenResponse(BaseModel):

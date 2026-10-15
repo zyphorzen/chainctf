@@ -28,11 +28,9 @@ def test_indexer_idempotency_and_processing(db_session, test_player):
     mock_w3.eth.get_logs.return_value = [fake_log]
 
     with patch("app.services.indexer_service.get_web3_client", return_value=mock_w3):
-        # First sync processes 1 event
         new_count1 = sync_events(db_session, from_block=0)
         assert new_count1 == 1
 
-        # Second sync with same log processes 0 events (idempotent!)
         new_count2 = sync_events(db_session, from_block=0)
         assert new_count2 == 0
 
