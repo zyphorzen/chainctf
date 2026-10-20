@@ -7,7 +7,7 @@ export const anvilChain = {
   name: "Anvil Local",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: ["http://127.0.0.1:8545"] },
+    default: { http: ["http://localhost:8545"] },
   },
 } as const;
 
@@ -15,7 +15,7 @@ export const config = createConfig({
   chains: [anvilChain, sepolia],
   connectors: [injected()],
   transports: {
-    [anvilChain.id]: http("http://127.0.0.1:8545"),
+    [anvilChain.id]: http("http://localhost:8545"),
     [sepolia.id]: http("https://rpc.sepolia.org"),
   },
 });
