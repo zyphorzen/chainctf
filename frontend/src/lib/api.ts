@@ -10,7 +10,10 @@ export async function requestNonce(walletAddress: string) {
   return res.json();
 }
 
-export async function verifySignature(walletAddress: string, signature: string) {
+export async function verifySignature(
+  walletAddress: string,
+  signature: string,
+) {
   const res = await fetch(`${API_BASE}/auth/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -29,7 +32,11 @@ export async function getChallenges(token?: string | null) {
   return res.json();
 }
 
-export async function submitFlag(challengeId: number, flag: string, token: string) {
+export async function submitFlag(
+  challengeId: number,
+  flag: string,
+  token: string,
+) {
   const res = await fetch(`${API_BASE}/challenges/${challengeId}/submit`, {
     method: "POST",
     headers: {
@@ -54,5 +61,13 @@ export async function getMyProfile(token: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to fetch profile");
+  return res.json();
+}
+
+export async function getMyAuthorizations(token: string) {
+  const res = await fetch(`${API_BASE}/player/me/authorizations`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch pending authorizations");
   return res.json();
 }
