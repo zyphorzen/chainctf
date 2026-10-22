@@ -4,7 +4,8 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "ChainCTF — Blockchain Cybersecurity Challenges",
-  description: "Capture The Flag platform with on-chain EIP-712 achievement verification",
+  description:
+    "Capture The Flag platform with on-chain EIP-712 achievement verification",
 };
 
 export default function RootLayout({
